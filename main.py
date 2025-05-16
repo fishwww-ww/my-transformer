@@ -11,7 +11,8 @@ def main():
     df = pd.read_csv(pvo_file_path)
 
     # 假设第二列是我们需要的特征
-    data = df.iloc[:, 1].values.reshape(-1, 1)
+    # 从第 20 行开始
+    data = df.iloc[19:, 1].values.reshape(-1, 1)
 
     # 数据标准化
     scaler = StandardScaler()
