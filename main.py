@@ -6,6 +6,7 @@ from PVOTransformer import PVOTransformer
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from sharp import calculate_sharpe_ratio
+from IC import calculate_ic
 
 
 def main():
@@ -14,11 +15,12 @@ def main():
     df = pd.read_csv(pvo_file_path)
 
     # 假设第二列和第五列是我们需要的特征
-    data = df.iloc[:, 1].values.reshape(-1, 1)
-    data2 = df.iloc[:, 4].values.reshape(-1, 1)
+    pvo = df.iloc[:, 1].values.reshape(-1, 1) # pvo
+    sse = df.iloc[:, 2].values.reshape(-1, 1) # sse
+    returns = df.iloc[:, 4].values.reshape(-1, 1) # return
 
     # 合并数据
-    combined_data = np.hstack((data, data2))
+    combined_data = np.hstack((pvo, returns))
 
     # 数据标准化
     scaler = StandardScaler()
@@ -76,10 +78,10 @@ def main():
                 val_loss += criterion(output.squeeze(), batch_y).item()
         
         print(f'Epoch {epoch+1}/{epochs}, Validation Loss: {val_loss/len(val_loader):.6f}')
-        
-        # print(f'Epoch {epoch+1}/{epochs}, Validation Loss: {val_loss/len(val_loader):.6f}')
     sharpe_ratio = calculate_sharpe_ratio(model, val_loader)
     print(f'Sharpe Ratio: {sharpe_ratio:.4f}')
+    ic_value = calculate_ic(model, val_loader)
+    print(f'Information Coefficient (IC): {ic_value:.4f}')
 
 if __name__ == "__main__":
     main()
