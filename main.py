@@ -8,9 +8,23 @@ import numpy as np
 from sharp import calculate_sharpe_ratio
 from IC import calculate_ic
 from symbol import handle_symbol
+import random
 
+
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    # 确保使用确定性算法
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def main():
+    set_seed(42)  # 在程序开始时调用
+
     pvo_file_path = "E:/Code/Quantitative Trading/data/多只股票多个时序特征时序特征.csv"
     # 读取CSV文件
     df = pd.read_csv(pvo_file_path)
@@ -175,7 +189,6 @@ def main():
     # 输出symbol,data_sharp中的sharp和data_returns_sharp中的sharp.按照data_sharp中的sharp排序
     for sym, sharpe in sorted_data_sharp:
         print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
-
 
 if __name__ == "__main__":
     main()
