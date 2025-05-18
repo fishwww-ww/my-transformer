@@ -23,8 +23,10 @@ def main():
     date = df.iloc[:, 5].values.reshape(-1, 1) # date
     symbol = df.iloc[:, 6].values.reshape(-1, 1) # symbol
     
-    data = handle_symbol(pvo, symbol)
-    data_sharp = {}
+    data = handle_symbol(pvo, symbol) # key: symbol, value: pvo
+    data_sharp = {} # key: symbol, value: sharpe ratio
+    data_returns = handle_symbol(returns, symbol) # key: symbol, value: returns
+    data_returns_sharp = {} # key: symbol, value: sharpe ratio
 
     # 使用每支股票的pvo训练数据
     for sym, sym_data in data.items():
@@ -95,10 +97,85 @@ def main():
 
     # 对data_sharp进行排序
     sorted_data_sharp = sorted(data_sharp.items(), key=lambda x: x[1], reverse=True)
+    # for sym, sharpe in sorted_data_sharp:
+        # print(f'Symbol: {sym}, Sharpe Ratio: {sharpe:.4f}')
+
+    # cpoy
+    for sym, sym_data in data_returns.items():
+        # Convert sym_data to a numpy array and reshape if necessary
+        sym_data = np.array(sym_data).reshape(-1, 1)
+
+        # Standardize the data
+        scaler = StandardScaler()
+        sym_data = scaler.fit_transform(sym_data)
+
+        # 自定义数据集
+        class TimeSeriesDataset(Dataset):
+            def __init__(self, data, seq_length=10):
+                self.data = torch.FloatTensor(data)
+                self.seq_length = seq_length
+                
+            def __len__(self):
+                return len(self.data) - self.seq_length
+            
+            def __getitem__(self, idx):
+                x = self.data[idx:idx+self.seq_length]
+                y = self.data[idx+self.seq_length, 0]  # 预测目标
+                return x, y
+
+        # Create dataset and dataloader
+        seq_length = 10
+        dataset = TimeSeriesDataset(sym_data, seq_length)
+        train_size = int(0.8 * len(dataset))
+        train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
+
+        train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=32)
+
+        # Initialize model
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model = PVOTransformer(input_dim=1).to(device)  # Update input_dim to 1 for single feature
+        criterion = torch.nn.MSELoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        # Train model
+        epochs = 50
+        for epoch in range(epochs):
+            model.train()
+            for batch_x, batch_y in train_loader:
+                batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+                
+                optimizer.zero_grad()
+                output = model(batch_x)
+                loss = criterion(output.squeeze(), batch_y)
+                loss.backward()
+                optimizer.step()
+            
+            # Validate model
+            model.eval()
+            val_loss = 0
+            with torch.no_grad():
+                for batch_x, batch_y in val_loader:
+                    batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+                    output = model(batch_x)
+                    val_loss += criterion(output.squeeze(), batch_y).item()
+            
+            # print(f'Symbol: {sym}, Epoch {epoch+1}/{epochs}, Validation Loss: {val_loss/len(val_loader):.6f}')
+
+        # Calculate Sharpe ratio for this symbol
+        sharpe_ratio = calculate_sharpe_ratio(model, val_loader)
+        data_returns_sharp[sym] = sharpe_ratio
+        # print(f'Symbol: {sym}, Sharpe Ratio: {sharpe_ratio:.4f}')
+
+    # 对data_sharp进行排序
+    sorted_data_returns_sharp = sorted(data_returns_sharp.items(), key=lambda x: x[1], reverse=True)
+    # for sym, sharpe in sorted_data_returns_sharp:
+        # print(f'Symbol: {sym}, Returns Sharpe Ratio: {sharpe:.4f}')    
+        
+    # 输出symbol,data_sharp中的sharp和data_returns_sharp中的sharp.按照data_sharp中的sharp排序
     for sym, sharpe in sorted_data_sharp:
-        print(f'Symbol: {sym}, Sharpe Ratio: {sharpe:.4f}')
+        print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
+
 
 if __name__ == "__main__":
     main()
-
-
