@@ -1,7 +1,7 @@
 import torch
 import torch.utils.data as data
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+# from sklearn.preprocessing import StandardScaler
 from PVOTransformer import PVOTransformer
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
@@ -48,8 +48,8 @@ def main():
         sym_data = np.array(sym_data).reshape(-1, 1)
 
         # Standardize the data
-        scaler = StandardScaler()
-        sym_data = scaler.fit_transform(sym_data)
+        # scaler = StandardScaler()
+        # sym_data = scaler.fit_transform(sym_data)
 
         # 自定义数据集
         class TimeSeriesDataset(Dataset):
@@ -120,8 +120,8 @@ def main():
         sym_data = np.array(sym_data).reshape(-1, 1)
 
         # Standardize the data
-        scaler = StandardScaler()
-        sym_data = scaler.fit_transform(sym_data)
+        # scaler = StandardScaler()
+        # sym_data = scaler.fit_transform(sym_data)
 
         # 自定义数据集
         class TimeSeriesDataset(Dataset):
