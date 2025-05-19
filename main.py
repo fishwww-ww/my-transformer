@@ -56,7 +56,7 @@ def main():
 
         # 自定义数据集
         class TimeSeriesDataset(Dataset):
-            def __init__(self, data, seq_length=10):
+            def __init__(self, data, seq_length=60):
                 self.data = torch.FloatTensor(data)
                 self.seq_length = seq_length
                 
@@ -69,7 +69,7 @@ def main():
                 return x, y
 
         # Create dataset and dataloader
-        seq_length = 10
+        seq_length = 60  # 修改为60个交易日
         dataset = TimeSeriesDataset(sym_data, seq_length)
         train_size = int(0.8 * len(dataset))
         train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
@@ -131,7 +131,7 @@ def main():
 
         # 自定义数据集
         class TimeSeriesDataset(Dataset):
-            def __init__(self, data, seq_length=10):
+            def __init__(self, data, seq_length=60):
                 self.data = torch.FloatTensor(data)
                 self.seq_length = seq_length
                 
@@ -144,7 +144,7 @@ def main():
                 return x, y
 
         # Create dataset and dataloader
-        seq_length = 10
+        seq_length = 60  # 修改为60个交易日
         dataset = TimeSeriesDataset(sym_data, seq_length)
         train_size = int(0.8 * len(dataset))
         train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, len(dataset) - train_size])
@@ -197,8 +197,8 @@ def main():
         
     # 输出symbol,data_sharp中的sharp和data_returns_sharp中的sharp.按照data_sharp中的sharp排序
     for sym, sharpe in sorted_data_sharp:
-        # print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
-        print(f'Symbol: {sym}, PVO RSE: {data_rse[sym]:.4f}, Returns RSE: {data_returns_rse[sym]:.4f}')
+        print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
+        # print(f'Symbol: {sym}, PVO RSE: {data_rse[sym]:.4f}, Returns RSE: {data_returns_rse[sym]:.4f}')
 
 if __name__ == "__main__":
     main()
