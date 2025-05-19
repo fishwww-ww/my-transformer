@@ -9,6 +9,7 @@ from sharp import calculate_sharpe_ratio
 from IC import calculate_ic
 from symbol import handle_symbol
 import random
+from metrics import calculate_rse
 
 
 def set_seed(seed=42):
@@ -41,6 +42,8 @@ def main():
     data_sharp = {} # key: symbol, value: sharpe ratio
     data_returns = handle_symbol(returns, symbol) # key: symbol, value: returns
     data_returns_sharp = {} # key: symbol, value: sharpe ratio
+    data_rse = {} # key: symbol, value: rse
+    data_returns_rse = {} # key: symbol, value: returns rse
 
     # 使用每支股票的pvo训练数据
     for sym, sym_data in data.items():
@@ -107,10 +110,13 @@ def main():
         # Calculate Sharpe ratio for this symbol
         sharpe_ratio = calculate_sharpe_ratio(model, val_loader)
         data_sharp[sym] = sharpe_ratio
+        rse = calculate_rse(model, val_loader)
+        data_rse[sym] = rse
         # print(f'Symbol: {sym}, Sharpe Ratio: {sharpe_ratio:.4f}')
 
     # 对data_sharp进行排序
     sorted_data_sharp = sorted(data_sharp.items(), key=lambda x: x[1], reverse=True)
+    sorted_data_rse = sorted(data_rse.items(), key=lambda x: x[1], reverse=True)
     # for sym, sharpe in sorted_data_sharp:
         # print(f'Symbol: {sym}, Sharpe Ratio: {sharpe:.4f}')
 
@@ -179,16 +185,20 @@ def main():
         # Calculate Sharpe ratio for this symbol
         sharpe_ratio = calculate_sharpe_ratio(model, val_loader)
         data_returns_sharp[sym] = sharpe_ratio
+        rse = calculate_rse(model, val_loader)
+        data_returns_rse[sym] = rse
         # print(f'Symbol: {sym}, Sharpe Ratio: {sharpe_ratio:.4f}')
 
     # 对data_sharp进行排序
     sorted_data_returns_sharp = sorted(data_returns_sharp.items(), key=lambda x: x[1], reverse=True)
+    sorted_data_returns_rse = sorted(data_returns_rse.items(), key=lambda x: x[1], reverse=True)
     # for sym, sharpe in sorted_data_returns_sharp:
         # print(f'Symbol: {sym}, Returns Sharpe Ratio: {sharpe:.4f}')    
         
     # 输出symbol,data_sharp中的sharp和data_returns_sharp中的sharp.按照data_sharp中的sharp排序
     for sym, sharpe in sorted_data_sharp:
-        print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
+        # print(f'Symbol: {sym}, PVO Sharpe Ratio: {data_sharp[sym]:.4f}, Returns Sharpe Ratio: {data_returns_sharp[sym]:.4f}')
+        print(f'Symbol: {sym}, PVO RSE: {data_rse[sym]:.4f}, Returns RSE: {data_returns_rse[sym]:.4f}')
 
 if __name__ == "__main__":
     main()
