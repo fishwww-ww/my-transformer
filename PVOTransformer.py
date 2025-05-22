@@ -116,25 +116,33 @@ class PositionalEncoding(nn.Module):
 class PVOTransformer(Transformer):
     def __init__(self, input_dim, d_model=64, num_heads=4, num_layers=2, d_ff=256, max_seq_length=100, dropout=0.1):
         super(PVOTransformer, self).__init__(src_vocab_size=1, tgt_vocab_size=1, d_model=d_model, num_heads=num_heads,
-                                           num_layers=num_layers, d_ff=d_ff, max_seq_length=max_seq_length, dropout=dropout)
-        self.input_dim = input_dim  # 输入维度
-        self.token_embedding = nn.Linear(input_dim, d_model)  # 词嵌入层
-        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)  # 位置编码
-        self.dropout = nn.Dropout(dropout)  # dropout层
+                                             num_layers=num_layers, d_ff=d_ff, max_seq_length=max_seq_length, dropout=dropout)
+        self.input_dim = input_dim
+        self.output_dim = 1  # 添加输出维度属性，用于预测单个值
+        self.token_embedding = nn.Linear(input_dim, d_model)
+        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
+        self.dropout = nn.Dropout(dropout)
 
-        # 使用增强注意力机制
+        # 使用增强型注意力机制
         self.encoder_layers = nn.ModuleList(
             [EncoderLayer(d_model, num_heads, d_ff, dropout, attention_type='autoformer') for _ in range(num_layers)]
         )
+        
+        # 输出层
+        self.fc = nn.Linear(d_model, self.output_dim)
 
     def forward(self, src):
-        token_embedded = self.token_embedding(src)  # 词嵌入
-        position_encoded = self.positional_encoding(token_embedded)  # 位置编码
-        src_embedded = self.dropout(position_encoded)  # dropout处理
+        # 输入形状: [batch_size, seq_len, input_dim]
+        token_embedded = self.token_embedding(src)  # [batch_size, seq_len, d_model]
+        position_encoded = self.positional_encoding(token_embedded)
+        src_embedded = self.dropout(position_encoded)
 
         enc_output = src_embedded
         for enc_layer in self.encoder_layers:
-            enc_output = enc_layer(enc_output, None)  # 逐层编码
+            enc_output = enc_layer(enc_output, None)  # [batch_size, seq_len, d_model]
 
-        output = self.fc(enc_output)  # 全连接输出
-        return output[:, -1, :]  # 返回序列最后一个时间步的输出
+        # 只取最后一个时间步的特征
+        final_step_feature = enc_output[:, -1, :]  # [batch_size, d_model]
+        output = self.fc(final_step_feature)  # [batch_size, output_dim]
+        
+        return output
