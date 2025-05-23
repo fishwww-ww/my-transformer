@@ -113,9 +113,9 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pe[:, :x.size(1)]  # 添加位置编码到输入
 
-class PVOTransformer(Transformer):
+class MyTransformer(Transformer):
     def __init__(self, input_dim, d_model=64, num_heads=4, num_layers=2, d_ff=256, max_seq_length=100, dropout=0.1):
-        super(PVOTransformer, self).__init__(src_vocab_size=1, tgt_vocab_size=1, d_model=d_model, num_heads=num_heads,
+        super(MyTransformer, self).__init__(src_vocab_size=1, tgt_vocab_size=1, d_model=d_model, num_heads=num_heads,
                                              num_layers=num_layers, d_ff=d_ff, max_seq_length=max_seq_length, dropout=dropout)
         self.input_dim = input_dim
         self.output_dim = 1  # 添加输出维度属性，用于预测单个值

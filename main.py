@@ -2,7 +2,7 @@ import torch
 import torch.utils.data as data
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from PVOTransformer import PVOTransformer
+from MyTransformer import MyTransformer
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from sharp import calculate_sharpe_ratio
@@ -94,7 +94,7 @@ def main():
 
     # 初始化模型
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = PVOTransformer(input_dim=INPUT_DIM).to(device)
+    model = MyTransformer(input_dim=INPUT_DIM).to(device)
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     # scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
@@ -230,7 +230,7 @@ def train_with_returns_only():
 
     # 初始化模型
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = PVOTransformer(input_dim=1).to(device)
+    model = MyTransformer(input_dim=1).to(device)
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
