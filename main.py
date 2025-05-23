@@ -177,8 +177,8 @@ def main():
     plt.figure(figsize=(12, 6))
     
     # 绘制实际值和预测值
-    plt.plot(time_steps, actuals, label='实际值', color='blue')
-    plt.plot(time_steps, predictions, label='预测值', color='red', linestyle='--')
+    plt.plot(time_steps, actuals, label='real', color='blue')
+    plt.plot(time_steps, predictions, label='predict', color='red', linestyle='--')
     
     # 添加标题和标签
     plt.title('预测值与实际值对比')
